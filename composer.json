@@ -1,0 +1,21 @@
+{
+    "name": "anovsiradj/cutter-php",
+    "description": "(another) PHP Template Library",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "anovsiradj",
+            "email": "anov.siradj22@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "anovsiradj\\Cutter": "Cutter.php"
+        }
+    },
+    "require": {},
+    "archive": {
+        "exclude": ["example", "file.templat"]
+    }
+}
