@@ -16,7 +16,7 @@ $blade->view_path = __DIR__ . '/view';
 
 // INITIAL DATA
 $blade->data('title', 'whutt?');
-$blade->data('nav', ['home', 'about', 'special']);
+$blade->data('nav', ['home', 'about', 'special', 'not-found']);
 
 // JUST EXAMPLE
 $webpage = 'page/' . (empty($_GET['web']) ? 'home' : $_GET['web']);

@@ -111,4 +111,4 @@ function cutter_load_file($path, $data, $ob = true) {
 	}
 }
 
-require('cutter-facecade.php');
+require('cutter-facade.php');
