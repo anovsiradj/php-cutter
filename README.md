@@ -4,4 +4,4 @@
 Inspired by Blade (Laravel).
 
 # Installation
-Download this source. Also available via Composer.
+Download this source. Also available via Composer (soon).
