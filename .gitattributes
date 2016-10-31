@@ -1,3 +1,7 @@
+# http://stackoverflow.com/a/17069547/3036312
+example/ export-ignore
+file.templat export-ignore
+
 # Auto detect text files and perform LF normalization
 * text=auto
 
