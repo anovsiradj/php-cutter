@@ -10,7 +10,9 @@
         }
     ],
     "autoload": {
-        "psr-0": { "anovsiradj\\Cutter": "Cutter.php" }
+        "psr-4": {
+            "anovsiradj\\Cutter": "Cutter.php"
+        }
     },
     "require": {},
     "archive": {
