@@ -10,9 +10,7 @@
         }
     ],
     "autoload": {
-        "psr-4": {
-            "anovsiradj\\": "./"
-        }
+        "classmap": ["Cutter.php"]
     },
     "require": {},
     "archive": {
