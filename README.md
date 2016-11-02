@@ -4,4 +4,4 @@
 Inspired by Blade (Laravel).
 
 # Installation
-Download this source. Also available via Composer (soon).
+Download this source. Also available via [Composer](https://packagist.org/packages/anovsiradj/cutter) (dev-master).
