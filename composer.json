@@ -12,5 +12,8 @@
     "autoload": {
         "classmap": ["Cutter.php"]
     },
-    "require": {}
+    "require": {},
+    "archive": {
+        "exclude": ["/example", "/*.templat"]
+    }
 }
