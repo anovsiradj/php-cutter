@@ -1,10 +1,7 @@
-
-This is a commant.
-
-Message for programmer2: please use tab (with 4 space)
-I know you dont like it, but you can deny me.
-
-<?php cutter_start('content') ?>
-	<h1>who am i?</h1>
-	Lorem ipsum dolor sit amet, consectetur adipisicing elit. Obcaecati dolor, ut voluptatum consectetur sint, eligendi iure tenetur! At maiores, ad recusandae quasi, optio earum minima modi velit, beatae numquam veniam.
+<?php cutter_start('js') ?>
+<script src="http://anovsiradj.github.io/readme5/readme5.js"></script>
+<script>
+	document.getElementsByTagName('article')[0].id = 'my_awesome_readme';
+	(new Readme5('my_awesome_readme')).init('../README.md');
+</script>
 <?php cutter_end() ?>

@@ -1,29 +1,33 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require('../Cutter.php');
 
 // GET INSTANCE
 $blade = anovsiradj\Cutter::init();
 
 // ---------- START CONFIG ----------
-$blade->config = [
-	'layout' => 'admin-layout',
-	'view_path' => (__DIR__ . '/view')
-];
-// --------------- OR ---------------
-$blade->layout = 'my-layout';
-$blade->view_path = __DIR__ . '/view';
+$blade->layout = 'awesome-layout';
+$blade->set_view_path('view');
 // ----------- END CONFIG -----------
 
-// INITIAL DATA
-$blade->data('title', 'whutt?');
-$blade->data('nav', ['home', 'about', 'special', 'not-found']);
+// DEFAULT DATA
+$blade->data('page_title', 'Welcome To Cutter');
 
 // JUST EXAMPLE
-$webpage = 'page/' . (empty($_GET['web']) ? 'home' : $_GET['web']);
+$pages = ['home', 'about', 'special'];
+$blade->data('nav_link', $pages);
 
-$blade->view($webpage, [
-	'title' => $webpage,
-	'saymyname' => 'anovsiradj'
-], false); // dont call render(); You need call render manually.
+if (!empty($_GET['web']) && in_array($_GET['web'], $pages)) {
 
-$blade->render();
+	$webpage = 'page/' . $_GET['web'];
+
+	$blade->view($webpage, [
+		'page_title' => ('Lorem Ipsum: ' . $_GET['web']),
+	], false); // dont render(); You need to call render() manually.
+}
+
+$blade->render([
+	'exec_time' => (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'])
+]);
