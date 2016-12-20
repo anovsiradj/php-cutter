@@ -12,23 +12,27 @@ namespace anovsiradj;
 
 class Cutter
 {
-	protected static $inst;
+	private static $instance;
 	private $config = [];
 
+	private $rendered = false;
 	private $dataset = [];
 	private $viewset = [];
 	private $current_field = null;
 	private $current_stack = null;
 
+	public $once_data = false;
+	private $once_datakey = [];
+
 	private function __construct()
 	{
-		$this->layout = 'layout';
+		$this->set_layout('layout');
 	}
 
 	public static function init()
 	{
-		if (!isset(static::$inst)) static::$inst = new Cutter();
-		return static::$inst;
+		if (!isset(static::$instance)) static::$instance = new Cutter();
+		return static::$instance;
 	}
 
 	public function __get($key)
@@ -47,10 +51,8 @@ class Cutter
 		} else $this->config[$key] = $val;
 	}
 
-	public function data()
+	public function data(...$args)
 	{
-		$args = func_get_args();
-
 		if (isset($args[0])) {
 			if (is_array($args[0])) {
 				foreach ($args[0] as $k => $v) {
@@ -62,12 +64,29 @@ class Cutter
 				$this->dataset[$args[0]] = $v;
 			}
 
+			unset($args);
+
 		} else {
 			return $this->dataset;
 		}
 	}
 
-	public function set_view_path($path)
+	public function rem_data($key)
+	{
+		if (isset($this->dataset[$key])) unset($this->dataset[$key]);
+	}
+
+	public function set_layout($name)
+	{
+		$this->layout = $name;
+	}
+
+	public function get_layout()
+	{
+		return $this->layout;
+	}
+
+	public function set_path($path)
 	{
 		$path = realpath($path);
 
@@ -78,40 +97,55 @@ class Cutter
 			$this->view_path = $path . DIRECTORY_SEPARATOR;
 		}
 	}
-	public function get_view_path($name = null)
+
+	// deprecated
+	public function set_view_path($path)
 	{
-		if (isset($name)) {
+		return $this->set_path($path);
+	}
+
+	public function get_path($name = null)
+	{
+		if (empty($name)) {
+			return $this->view_path;
+		} else {
 			$name = str_replace('/', DIRECTORY_SEPARATOR, trim($name, '/'));
 			$path = $this->view_path;
 
 			return ($path . $name . '.cutter.php');
-
-		} else {
-			return $this->view_path;
 		}
 	}
 
-	public function load_view($name, $data)
+	// deprecated
+	public function get_view_path($name = null)
 	{
-		$this->data($data);
-		cutter_load_file($this->get_view_path($name), $this->dataset, true);
+		return $this->get_path($name);
+	}
+
+	// deprecated
+	public function load_view($name, $data = [])
+	{
+		$this->view($name, $data, false);
 	}
 
 	public function view($name, $data = [], $render = true)
 	{
-		$this->load_view($name, $data);
+		$this->data($data);
+		cutter_load_file($this->get_path($name), $this->dataset, true);
+
 		if ($render) $this->render();
 	}
 
 	public function render($data = [])
 	{
-		static $rendered = false;
-		if ($rendered) return;
-		$rendered = true;
+		if ($this->current_field !== null) {
+			throw new Exception(sprintf('<div>Error <b>%s</b>: You have to close field, to render</div>', __CLASS__));
+		}
+		if ($this->rendered) return;
+		$this->rendered = true;
 
 		$this->data($data);
-
-		cutter_load_file($this->get_view_path($this->layout), $this->dataset, false);
+		cutter_load_file($this->get_path($this->layout), $this->dataset, false);
 	}
 
 	public function field($name)
@@ -124,8 +158,7 @@ class Cutter
 	public function start($name, $stack = null)
 	{
 		if ($this->current_field !== null) {
-			echo sprintf('<div>Error <b>%s</b>: start field <b>%s</b>, without closing <b>%s</b> field</div>', __CLASS__, $name, $this->current_field);
-			die();
+			throw new Exception(sprintf('<div>Error <b>%s</b>: start field <b>%s</b>, without closing <b>%s</b> field</div>', __CLASS__, $name, $this->current_field));
 		}
 
 		if (empty($this->viewset[$name])) $this->viewset[$name] = [];
@@ -137,12 +170,14 @@ class Cutter
 	public function end()
 	{
 		if ($this->current_field === null) {
-			echo sprintf('<div>Error <b>%s</b>: closing <b>null</b> field</div>', __CLASS__);
-			die();
+			throw new Exception(sprintf('<div>Error <b>%s</b>: closing <b>null</b> field</div>', __CLASS__));
 		}
 
-		if ($this->current_stack === 'prev') {
+		// p/prev/previous
+		if ($this->current_stack !== null && $this->current_stack[0] === 'p') {
 			array_unshift($this->viewset[$this->current_field], ob_get_clean());
+
+		// n/next otherwise
 		} else {
 			array_push($this->viewset[$this->current_field], ob_get_clean());
 		}
@@ -152,11 +187,11 @@ class Cutter
 	}
 }
 
-function cutter_load_file($path, $data, $ob) {
+function cutter_load_file($path, &$data, $ob) {
 	if ($ob) ob_start();
 	extract($data);
 	include($path);
 	if ($ob) ob_end_clean();
 }
 
-require('fn-facade.php');
+require (dirname(__FILE__) . DIRECTORY_SEPARATOR . 'fn-facade.php');

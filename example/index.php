@@ -8,8 +8,8 @@ require('../Cutter.php');
 $blade = anovsiradj\Cutter::init();
 
 // ---------- START CONFIG ----------
-$blade->layout = 'awesome-layout';
-$blade->set_view_path('view');
+$blade->set_path('view');
+$blade->set_layout('awesome-layout');
 // ----------- END CONFIG -----------
 
 // DEFAULT DATA
@@ -28,6 +28,7 @@ if (!empty($_GET['web']) && in_array($_GET['web'], $pages)) {
 	], false); // dont render(); You need to call render() manually.
 }
 
+// here we go...,
 $blade->render([
 	'exec_time' => (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'])
 ]);
