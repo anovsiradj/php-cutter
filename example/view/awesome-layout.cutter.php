@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8"/>
 	<title><?php echo $page_title ?></title>
-	<?php cutter('css') ?>
+	<?php cutter_field('css') ?>
 </head>
 <body>
 	<h1><?php echo $page_title ?></h1>
@@ -16,11 +16,11 @@
 		} ?>
 	</nav>
 
-	<article><?php cutter('content') ?></article>
+	<article><?php cutter_field('content') ?></article>
 
 	<br/>
 	<footer><b><?php echo round($exec_time, 10) ?> ms.</b></footer>
 
-	<?php cutter('js') ?>
+	<?php cutter_field('js') ?>
 </body>
 </html>
