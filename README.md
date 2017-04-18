@@ -20,15 +20,15 @@ require 'vendor/autoload.php';
 // instance (singleton)
 $blade = anovsiradj\Cutter::init();
 
-$blade->set_path('tpl');		// path/to/my-project/tpl/ (relative or absolute)
-$blade->set_layout('layout');	// path/to/my-project/tpl/layout.cutter.php
+$blade->set_path('tpl'); // path/to/my-project/tpl/ (relative or absolute)
+$blade->set_layout('layout'); // path/to/my-project/tpl/layout.cutter.php
 
 $blade->data('page_title', 'Web Posts'); // set variable
 
 $blade->view(
-	'post/list',							// path/to/my-project/tpl/post/list.cutter.php
-	array('date_today' => date('d F Y')),	// set variable
-	false									// dont render.
+	'post/list', // path/to/my-project/tpl/post/list.cutter.php
+	array('date_today' => date('d F Y')), // set variable
+	false // dont render.
 );
 
 $blade->render(); // render template
@@ -74,11 +74,41 @@ Use `cutter_start()` to start buffer section, and use `cutter_end()` to end.
 
 For better example, see directory `/example/`.
 
+## Documentation
+
+**Class Methods**
+
+```php
+public init( void )
+
+public set_layout( $name = 'layout' )
+public get_layout( void )
+
+public set_path( $path = null )
+public get_path( void )
+
+public view($name [, $data = array[, $render = true] ])
+public function render( $data = array )
+```
+
+**Class Properties**
+
+```php
+// none
+```
+
+**Function (Facade)**
+
+```php
+cutter_field( $field_name )
+
+cutter_start( $field_name )
+cutter_end( void )
+```
+
 ## License
 MIT License. (`/LICENSE`)
 
-### All suggestions are welcome
-
 ---
 
-Thanks.
+All suggestions are welcome. Thanks.
