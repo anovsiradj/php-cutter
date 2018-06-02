@@ -12,7 +12,7 @@
 		<?php
 		echo sprintf('<a href=\'%s\'>(no-page)</a>&nbsp;', dirname($_SERVER['SCRIPT_NAME']));
 		foreach ($nav_link as $n) {
-			echo sprintf('<a href=\'?web=%s\'>%s</a>&nbsp;', $n, $n);
+			echo sprintf('<a href="?web=%s">%s</a>&nbsp;', $n, $n);
 		} ?>
 	</nav>
 
