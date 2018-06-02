@@ -1,40 +1,43 @@
 # Cutter
 
+Simple Fast Lightweight.
+
 ## Introduction
 
 (another) PHP Template Library. Inspired by Blade (Laravel).
 
+## Requirement
+
+**PHP 5.6**
+
 ## Installation
-[Download this source](/anovsiradj/php-cutter/releases). Also available via [Composer](https://packagist.org/packages/anovsiradj/cutter):
+
+[Download this source](/anovsiradj/php-cutter/releases) or via [Composer](https://packagist.org/packages/anovsiradj/cutter):
+
 ```cmd
 composer require anovsiradj/cutter
 ```
 
-## Basic Usage
+## Example
 
-`index.php`
+`/index.php`
 
 ```php
 require 'vendor/autoload.php';
 
-// instance (singleton)
-$blade = anovsiradj\Cutter::init();
+$blade = anovsiradj\Cutter::init(); // (singleton)
+$blade->facade(); // enable facade
+$blade->set('layout','tpl/layout');
 
-$blade->set_path('tpl'); // path/to/my-project/tpl/ (relative or absolute)
-$blade->set_layout('layout'); // path/to/my-project/tpl/layout.cutter.php
-
-$blade->data('page_title', 'Web Posts'); // set variable
+$blade->data('page_title', 'My Posts'); // set variable
 
 $blade->view(
-	'post/list', // path/to/my-project/tpl/post/list.cutter.php
-	array('date_today' => date('d F Y')), // set variable
-	false // dont render.
+	'tpl/post/list',
+	['date_today' => date('Y-m-d')], // set variable(s)
 );
-
-$blade->render(); // render template
 ```
 
-`tpl/layout.cutter.php`
+`/tpl/layout.cutter.php`
 
 Use `cutter_field()` to define section.
 
@@ -54,9 +57,9 @@ Use `cutter_field()` to define section.
 
 ```
 
-`tpl/post/list.cutter.php`
+`/tpl/post/list.cutter.php`
 
-Use `cutter_start()` to start buffer section, and use `cutter_end()` to end.
+Use `cutter_start()` to start buffer, and use `cutter_end()` to end buffer.
 
 ```php
 <?php cutter_start('content_section') ?>
@@ -68,47 +71,50 @@ Use `cutter_start()` to start buffer section, and use `cutter_end()` to end.
 <?php cutter_end() ?>
 
 <?php cutter_start('js_section') ?>
-<script>console.log('<?php echo $date_today ?>')</script>
+<script>alert('date today is <?php echo $date_today ?>')</script>
 <?php cutter_end() ?>
 ```
 
-For better example, see directory `/example/`.
+For more, see `/example/`.
 
 ## Documentation
 
 **Class Methods**
 
 ```php
-public init( void )
+public init( void );
 
-public set_layout( $name = 'layout' )
-public get_layout( void )
+public get( string $key ); // getter alias
+public set( array $data | string $key [, mixed $value] ); // setter alias
 
-public set_path( $path = null )
-public get_path( void )
-
-public view($name [, $data = array[, $render = true] ])
-public function render( $data = array )
+public view( string $field [, array $data[, boolean $render ] ]);
+public render( array $data | string $key [, mixed $value ]);
 ```
 
 **Class Properties**
 
+*(getter/setter)*
+
 ```php
-// none
+$this->layout;
+$this->path;
 ```
 
-**Function (Facade)**
+**Facade (Function)**
 
 ```php
-cutter_field( $field_name )
+cutter_field( string $field_name );
 
-cutter_start( $field_name )
-cutter_end( void )
+cutter_start( string $field_name );
+cutter_end( void );
 ```
 
 ## License
-MIT License. (`/LICENSE`)
+MIT License. (see `/LICENSE`).
 
 ---
+
+TODO:
+- ?
 
 All suggestions are welcome. Thanks.
