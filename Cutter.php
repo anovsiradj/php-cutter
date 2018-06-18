@@ -31,7 +31,7 @@ class Cutter
 		$this->cfg['current_stack'] = null;
 	}
 
-	public static function init()
+	public static function &init()
 	{
 		if (isset(static::$instance) === false) static::$instance = new self;
 		return static::$instance;
