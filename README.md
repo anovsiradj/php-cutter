@@ -1,14 +1,14 @@
 # Cutter
 
-Simple Fast Lightweight.
+Simple Fast Lightweight PHP Templating.
 
-## Introduction
+(another) PHP template library. Inspired by Blade (Laravel) and Twig (Symfony).
 
-(another) PHP Template Library. Inspired by Blade (Laravel).
+## Requirements
 
-## Requirement
+Tested on both `5.6+` and `7.0+`.
 
-**PHP 5.6**
+Should work on any `5+`.
 
 ## Installation
 
@@ -25,7 +25,7 @@ composer require anovsiradj/cutter
 ```php
 require 'vendor/autoload.php';
 
-$blade = anovsiradj\Cutter::init(); // (singleton)
+$blade =& anovsiradj\Cutter::init(); // (singleton)
 $blade->facade(); // enable facade
 $blade->set('layout','tpl/layout');
 
@@ -39,7 +39,7 @@ $blade->view(
 
 `/tpl/layout.cutter.php`
 
-Use `cutter_field()` to define section.
+use `cutter_field()` to define section.
 
 ```php
 <!DOCTYPE html>
@@ -59,7 +59,7 @@ Use `cutter_field()` to define section.
 
 `/tpl/post/list.cutter.php`
 
-Use `cutter_start()` to start buffer, and use `cutter_end()` to end buffer.
+use `cutter_start()` to start buffer, and use `cutter_end()` to end buffer.
 
 ```php
 <?php cutter_start('content_section') ?>
@@ -77,44 +77,39 @@ Use `cutter_start()` to start buffer, and use `cutter_end()` to end buffer.
 
 For more, see `/example/`.
 
-## Documentation
+## Reference
 
 **Class Methods**
 
 ```php
-public init( void );
+public static init( void ) : $this;
 
-public get( string $key ); // getter alias
-public set( array $data | string $key [, mixed $value] ); // setter alias
+public get( string $key ) : void;
+public set( string|array $key [, string $value] ) : void;
 
-public view( string $field [, array $data[, boolean $render ] ]);
-public render( array $data | string $key [, mixed $value ]);
-```
+public view( string $view [, array $data = [] [, boolean $render = true ] ] ) : void;
 
-**Class Properties**
+public render( [array $data = [] ] ) : void;
 
-*(getter/setter)*
-
-```php
-$this->layout;
-$this->path;
+public static facade( void ) : void;
 ```
 
 **Facade (Function)**
 
 ```php
-cutter_field( string $field_name );
+cutter_field( string $field ) : boolean;
 
-cutter_start( string $field_name );
-cutter_end( void );
+cutter_start( string $field [, string $stack = 'after|next/pevious|before'] ) : void;
+cutter_end( void ) : void;
 ```
 
-## License
-MIT License. (see `/LICENSE`).
-
----
+## Development
 
 TODO:
 - ?
 
 All suggestions are welcome. Thanks.
+
+
+## License
+MIT. (see [/LICENSE](LICENSE)).
