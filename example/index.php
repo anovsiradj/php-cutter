@@ -1,17 +1,12 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+require __DIR__ . '/../Cutter.php';
 
-require('../Cutter.php');
-
-// GET INSTANCE
 $blade = anovsiradj\Cutter::init();
 
 $blade->facade();
-$blade->set('path','view');
+$blade->set('path', __DIR__ . '/view');
 $blade->set('layout','awesome-layout');
 
-// DEFAULT DATA
 $blade->data('page_title', 'Welcome To Cutter');
 
 $pages = ['home', 'about', 'special'];

@@ -9,8 +9,8 @@
 	<h1><?php echo $page_title ?></h1>
 
 	<nav>
+		<a href="?web=">(no-page)</a>&nbsp;
 		<?php
-		echo sprintf('<a href=\'%s\'>(no-page)</a>&nbsp;', dirname($_SERVER['SCRIPT_NAME']));
 		foreach ($nav_link as $n) {
 			echo sprintf('<a href="?web=%s">%s</a>&nbsp;', $n, $n);
 		} ?>
@@ -19,7 +19,7 @@
 	<article><?php cutter_field('content') ?></article>
 
 	<br/>
-	<footer><b><?php echo round($exec_time, 10) ?> ms.</b></footer>
+	<footer><b><?php echo round($exec_time, 8) ?> ms.</b></footer>
 
 	<?php cutter_field('js') ?>
 </body>
