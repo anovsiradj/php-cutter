@@ -4,7 +4,7 @@ This is a comment
 Remember:
 in this page, make the page cooler.
 
-<?php cutter_start('content') ?>
+<?php cutter_begin('content') ?>
 Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sapiente esse pariatur saepe, soluta adipisci quaerat porro autem voluptas doloribus. Earum ex, nam ducimus voluptatem perspiciatis minus quaerat voluptas harum error!
 <?php cutter_end() ?>
 
@@ -55,4 +55,4 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sapiente esse pariatur
 		margin-top: 16px;
 	}
 </style>
-<?php cutter_end() ?>
+<?php cutter_stop() ?>
