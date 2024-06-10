@@ -1,167 +1,215 @@
 <?php
-/**
-* 
-* Cutter.
-* Minimalist PHP template Library.
-* 
-* @since 201610211405, 201610261138, 20180602
-* @author anovsiradj (Mayendra Costanov)
-* 
-*/
 
 namespace anovsiradj;
-use Exception;
+
+/**
+ * Flexible Template Library
+ * 
+ * @author anovsiradj (Mayendra Costanov) <anov.siradj22@gmail.com>
+ * @version 201610211405, 201610261138, 20180602, 20240609
+ */
 
 class Cutter
 {
-	const VERSION = '3.0.0';
+	protected $sections = [];
+	protected $positions = [];
 
-	protected static $instance;
-	protected $cfg = array();
+	protected $config = [
+		'suffix' => [
+			'',
+			'.cutter.php',
+			'.php',
+			'.inc',
+			'.htm',
+			'.html',
+		],
+		'layout' => 'main',
+	];
 
-	protected $dataset = array();
-	protected $viewset = array();
+	protected $data = [];
+	protected $view = [];
 
-	private function __construct()
+	public function __construct()
 	{
-		$this->cfg['rendered'] = false;
-
-		$this->cfg['layout'] = 'layout';
-		$this->cfg['path'] = '';
-
-		$this->cfg['current_field'] = null;
-		$this->cfg['current_stack'] = null;
+		$this->config['path'] = [
+			'',
+			getcwd(),
+		];
 	}
 
-	public static function &init()
+	public function set($any, $val = null)
 	{
-		if (isset(static::$instance) === false) static::$instance = new static;
-		return static::$instance;
-	}
-
-	public function set($mixed, $value = null)
-	{
-		if (is_array($mixed)) {
-			foreach ($mixed as $k => $v) {
-				$this->cfg[$k] = $v;
-			}
-		} elseif (is_string($mixed)) {
-			$this->cfg[$mixed] = $value;
+		if (is_array($any)) {
+			$old = $this->config;
+			$new = $any;
+			$this->config = array_replace_recursive($old, $new);
+		} elseif (isset($any) && array_key_exists($any, $this->config) && is_array($this->config[$any]) && is_array($val)) {
+			$old = $this->config[$any];
+			$new = $val;
+			$this->config[$any] = array_replace_recursive($old, $new);
+		} elseif (isset($any)) {
+			$this->config[$any] = $val;
 		}
 	}
 
-	public function get($mixed = null)
+	public function get($any = null)
 	{
-		if (empty($mixed)) {
-			return $this->cfg;
-		} elseif (is_string($mixed) && isset($this->cfg[$mixed])) {
-			return $this->cfg[$mixed];
+		if (empty($any)) {
+			return $this->config;
+		} elseif (isset($this->config[$any])) {
+			return $this->config[$any];
 		}
 		return null;
 	}
 
-	public function dataReference(&$data)
+	public function dataByReference(&$data)
 	{
 		foreach ($data as $k => &$v) {
-			$this->dataset[$k] = &$v;
+			$this->data[$k] = &$v;
 		}
 	}
 
-	public function data($mixed, $v = null)
+	/**
+	 * @param mixed $any
+	 * @param mixed $val
+	 */
+	public function data($any = null, $val = null)
 	{
-		if (is_array($mixed)) {
-			$this->dataReference($mixed);
-		} elseif (is_string($mixed)) {
-			$this->dataset[$mixed] = $v;
+		$args = func_get_args();
+		if (count($args) === 0) {
+			return $this->data;
+		} elseif (is_array($any)) {
+			$this->dataByReference($any);
+		} elseif (count($args) === 2 && isset($any)) {
+			$this->data[$any] = $val;
+		} elseif (count($args) === 1 && isset($any) && isset($this->data[$any])) {
+			return $this->data[$any];
 		}
 	}
 
-	public function path($name)
+	public function path($names)
 	{
-		$path = empty($this->cfg['path']) ? $this->cfg['path'] : ($this->cfg['path'] . '/');
-		return ($path . $name . '.cutter.php');
+		$paths = (array) $this->config['path'];
+		$names = (array) $names;
+		$suffixs = (array) $this->config['suffix'];
+
+		foreach ($paths as $path) {
+			foreach ($suffixs as $suffix) {
+				foreach ($names as $name) {
+					$file = "$path$name$suffix";
+					if (file_exists($file)) {
+						return $file;
+					}
+				}
+			}
+		}
 	}
 
-	public function view($name, $data = array(), $render = true)
+	public function view($name, $data = [], $render = true)
 	{
-		$this->dataReference($data);
-		_cutter_include($this->path($name), $this->dataset, true);
+		$this->dataByReference($data);
+
+		$result = $this->load($this->path($name), true);
 
 		if ($render) $this->render();
+
+		return $result;
 	}
 
-	public function render($data = array())
+	public function render($data = [])
 	{
-		if ($this->cfg['current_field'] !== null) {
-			throw new \Exception('[Cutter]: You have to close field to render template.');
-		}
-		if ($this->cfg['rendered']) return;
-		$this->cfg['rendered'] = true;
+		$this->dataByReference($data);
 
-		$this->dataReference($data);
-		_cutter_include($this->path($this->cfg['layout']), $this->dataset, false);
+		$result = $this->load($this->path($this->config['layout']), false);
+
+		return $result;
 	}
 
-	public function field($name)
+	public function section($name)
 	{
-		if (array_key_exists($name, $this->viewset)) {
-			foreach ($this->viewset[$name] as &$field) echo $field;
+		if (array_key_exists($name, $this->view)) {
+			foreach ($this->view[$name] as &$section) echo $section;
 			return true;
 		}
 		return false;
 	}
 
-	public function start($name, $stack = null)
+	public function field($name)
 	{
-		if ($this->cfg['current_field'] !== null) {
-			throw new \Exception(sprintf('[Cutter]: opening field "%s", without closing "%s" field', $name, $this->cfg['current_field']), 1);
+		return $this->section($name);
+	}
+
+	public function begin($section, $position = null)
+	{
+		if (!array_key_exists($section, $this->view)) $this->view[$section] = [];
+
+		if (empty($position)) {
+			$position = 'after';
 		}
 
-		if (!array_key_exists($name, $this->viewset)) $this->viewset[$name] = array();
-		$this->cfg['current_field'] = $name;
-		$this->cfg['current_stack'] = $stack;
+		$this->sections[] = $section;
+		$this->positions[] = $position;
 		ob_start();
 	}
-	public function begin($name, $stack = null)
+
+	public function start($section, $position = null)
 	{
-		$this->start($name, $stack);
+		$this->begin($section, $position);
+	}
+
+	public function open($section, $position = null)
+	{
+		$this->begin($section, $position);
 	}
 
 	public function end()
 	{
-		if ($this->cfg['current_field'] === null) {
-			throw new \Exception('[Cutter]: cannot closing (null) field', 1);
-		}
+		$section = array_pop($this->sections);
+		$position = array_pop($this->positions);
 
-		/* n/next | a/after */
-		if (empty($this->cfg['current_stack']) || preg_match('/^[na]/', $this->cfg['current_stack'])) {
-			array_push($this->viewset[$this->cfg['current_field']], ob_get_clean());
+		$content = ob_get_contents();
+		ob_end_clean();
 
-		/* p/previous | b/before */
-		} elseif (preg_match('/^[pb]/', $this->cfg['current_stack'])) {
-			array_unshift($this->viewset[$this->cfg['current_field']], ob_get_clean());
-
+		if (empty($section) || preg_match('/^[1na]/', $position)) {
+			/* 1 | n/next | a/after */
+			array_push($this->view[$section], $content);
+		} elseif (empty($section) || preg_match('/^[0pb]/', $position)) {
+			/* 0 | p/previous | b/before */
+			array_unshift($this->view[$section], $content);
 		} else {
-			throw new \Exception(sprintf('[Cutter]: unknown "%s" stack position', $this->cfg['current_stack']), 1);
+			throw new \Exception(sprintf('[Cutter]: unknown "%s" position for section "%s"', $position, $section), 1);
 		}
-
-		$this->cfg['current_field'] = null;
-		$this->cfg['current_stack'] = null;
 	}
+
 	public function stop()
 	{
 		$this->end();
 	}
 
-	public static function facade()
+	public function close()
 	{
-		require __DIR__ . '/fn-facade.php';
+		$this->end();
 	}
-}
 
-function _cutter_include($_cutter_load_file_path, &$_cutter_load_file_data, $_cutter_load_file_isob) {
-	if ($_cutter_load_file_isob) ob_start();
-	extract($_cutter_load_file_data);
-	require $_cutter_load_file_path;
-	if ($_cutter_load_file_isob) ob_end_clean();
+	public function load($_cutter_load_file, $_cutter_load_isob = false)
+	{
+		if ($_cutter_load_isob) ob_start();
+		if (empty($_cutter_load_file)) {
+			throw new \Exception('[Cutter]: load empty file', 1);
+		} else {
+			extract($this->data);
+			$cutter = $this; // IMPORTANT
+			$result = require($_cutter_load_file);
+		}
+		if ($_cutter_load_isob) ob_end_clean();
+
+		return $result;
+	}
+
+	public function __invoke($section, $callback, $position = null)
+	{
+		$this->begin($section, $position);
+		$callback($this->data);
+		$this->end();
+	}
 }

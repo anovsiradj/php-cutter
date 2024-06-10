@@ -1,14 +1,8 @@
 # Cutter
 
-Simple Fast Lightweight PHP Templating.
+Flexible Template Library. Inspired by Blade (Laravel) and Twig (Symfony).
 
-(another) PHP template library. Inspired by Blade (Laravel) and Twig (Symfony).
-
-## Requirements
-
-Tested on both `5.6+` and `7.0+`.
-
-Should work on any `5+`.
+Tested on PHP `5.6`, `~7` and `~8`.
 
 ## Installation
 
@@ -23,93 +17,93 @@ composer require anovsiradj/cutter
 `/index.php`
 
 ```php
-require 'vendor/autoload.php';
+require 'Cutter.php'; // directly or composer
 
-$blade =& anovsiradj\Cutter::init(); // (singleton)
-$blade->facade(); // enable facade
-$blade->set('layout','tpl/layout');
+$cutter = new anovsiradj\Cutter;
+$cutter->set('layout','/layouts/main');
 
-$blade->data('page_title', 'My Posts'); // set variable
+$cutter->data('page_title', 'My Posts'); // set variable
 
-$blade->view(
-	'tpl/post/list',
+$cutter->view(
+	'/pages/home',
 	['date_today' => date('Y-m-d')], // set variable(s)
 );
 ```
 
-`/tpl/layout.cutter.php`
+`/layouts/main.php`
 
-use `cutter_field()` to define section.
+use `section()` to define section
 
 ```php
 <!DOCTYPE html>
 <html>
 	<head>
-		<title><?php echo $page_title ?></title>
+		<title><?= $page_title ?></title>
 	</head>
+
 	<body>
 		<div>
-			<?php cutter_field('content_section') ?>
+			<?php $cutter->section('content') ?>
 		<div>
-		<?php cutter_field('js_section') ?>
+
+		<?php $cutter->section('script') ?>
 	</body>
 </html>
-
 ```
 
-`/tpl/post/list.cutter.php`
+`/pages/home.php`
 
-use `cutter_start()` to start buffer, and use `cutter_end()` to end buffer.
+use `begin()` and `end()` to output-buffer section
 
 ```php
-<?php cutter_start('content_section') ?>
+<?php $this->begin('content') ?>
 <ul>
 	<li>Post title 1</li>
 	<li>Post title 2</li>
 	<li>Post title 3</li>
 </ul>
-<?php cutter_end() ?>
+<?php $this->end() ?>
 
-<?php cutter_start('js_section') ?>
+<?php $this->begin('script') ?>
 <script>alert('date today is <?php echo $date_today ?>')</script>
-<?php cutter_end() ?>
+<?php $this->end() ?>
 ```
 
-For more, see `/example/`.
+for more, see `/example/`.
 
 ## Reference
 
 **Class Methods**
 
 ```php
-public static init( void ) : $this;
+get( $key ) : void;
+set( $key, mixed $val ) : void;
 
-public get( string $key ) : void;
-public set( string|array $key [, string $value] ) : void;
+data( mixed $any [, mixed $val] ): mixed;
 
-public view( string $view [, array $data = [] [, boolean $render = true ] ] ) : void;
+load( $file [, bool $isob = false] ): void;
 
-public render( [array $data = [] ] ) : void;
+view( mixed $name [, array $data = [] [, bool $render = true ] ] ) : void;
 
-public static facade( void ) : void;
-```
+render( [array $data = [] ] ) : void;
 
-**Facade (Function)**
+section( $name ) : bool;
 
-```php
-cutter_field( string $field ) : boolean;
-
-cutter_start( string $field [, string $stack = 'after|next/pevious|before'] ) : void;
-cutter_end( void ) : void;
+begin( $name ) : void;
+end(): void
 ```
 
 ## Development
 
 TODO:
-- ?
+- single file library / phar?
+- inheritance
+- ~~dynamic path~~
+- ~~dynamic view~~
 
 All suggestions are welcome. Thanks.
 
+## Reference
 
-## License
-MIT. (see [/LICENSE](LICENSE)).
+- https://laravel.com/docs/5.8/blade
+- https://twig.symfony.com/doc/2.x/
