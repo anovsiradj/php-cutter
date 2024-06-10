@@ -1,14 +1,15 @@
 
 This is a comment
 
-Remember:
-in this page, make the page cooler.
+note:
+in this page, make it fancy.
 
-<?php cutter_begin('content') ?>
+
+<?php $cutter->begin('content') ?>
 Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sapiente esse pariatur saepe, soluta adipisci quaerat porro autem voluptas doloribus. Earum ex, nam ducimus voluptatem perspiciatis minus quaerat voluptas harum error!
-<?php cutter_end() ?>
+<?php $cutter->end() ?>
 
-<?php cutter_start('css') ?>
+<?php $cutter->begin('css') ?>
 <style>
 	html {
 		background-color: aqua;
@@ -55,4 +56,4 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sapiente esse pariatur
 		margin-top: 16px;
 	}
 </style>
-<?php cutter_stop() ?>
+<?php $cutter->end() ?>
