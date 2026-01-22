@@ -97,7 +97,7 @@ class Cutter
 			foreach ($suffixs as $suffix) {
 				foreach ($names as $name) {
 					$file = "$path$name$suffix";
-					if (file_exists($file)) {
+					if (file_exists($file) && is_file($file)) {
 						return $file;
 					}
 				}
