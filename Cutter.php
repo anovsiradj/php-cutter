@@ -6,7 +6,7 @@ namespace anovsiradj;
  * Flexible Template Library
  * 
  * @author anovsiradj (Mayendra Costanov) <anov.siradj22@gmail.com>
- * @version 201610211405, 201610261138, 20180602, 20240609
+ * @version 201610211405, 201610261138, 20180602, 20240609, 20261113
  */
 
 class Cutter
@@ -29,6 +29,20 @@ class Cutter
 	protected $data = [];
 	protected $view = [];
 
+	/** @var string|null Current section being captured */
+	protected $currentSection = null;
+	/** @var string|null Current position (next/prev/after/before) */
+	protected $currentPosition = null;
+
+	/** @var static|null Singleton instance */
+	private static $instance = null;
+
+	/** @var array<string, string|false> Cache for path() lookups */
+	private $pathCache = [];
+
+	/** @var string|null Cached resolved layout path */
+	private $resolvedLayout = null;
+
 	public function __construct()
 	{
 		$this->config['path'] = [
@@ -37,8 +51,38 @@ class Cutter
 		];
 	}
 
+	/**
+	 * Get singleton instance (static factory)
+	 * @return static
+	 */
+	public static function &init(): static
+	{
+		if (static::$instance === null) {
+			static::$instance = new static();
+		}
+		return static::$instance;
+	}
+
+	/**
+	 * Get current section being captured
+	 */
+	public function getCurrentSection(): ?string
+	{
+		return $this->currentSection;
+	}
+
+	/**
+	 * Get current position (next/prev/after/before)
+	 */
+	public function getCurrentPosition(): ?string
+	{
+		return $this->currentPosition;
+	}
+
 	public function set($any, $val = null)
 	{
+		$oldConfig = $this->config;
+
 		if (is_array($any)) {
 			$old = $this->config;
 			$new = $any;
@@ -49,6 +93,23 @@ class Cutter
 			$this->config[$any] = array_replace_recursive($old, $new);
 		} elseif (isset($any)) {
 			$this->config[$any] = $val;
+		}
+
+		// Normalize path & suffix to arrays once
+		if (isset($this->config['path']) && !is_array($this->config['path'])) {
+			$this->config['path'] = (array) $this->config['path'];
+		}
+		if (isset($this->config['suffix']) && !is_array($this->config['suffix'])) {
+			$this->config['suffix'] = (array) $this->config['suffix'];
+		}
+
+		// Invalidate caches if relevant config changed
+		if ($oldConfig['path'] !== ($this->config['path'] ?? null)
+			|| $oldConfig['suffix'] !== ($this->config['suffix'] ?? null)
+			|| $oldConfig['layout'] !== ($this->config['layout'] ?? null)
+		) {
+			$this->pathCache = [];
+			$this->resolvedLayout = null;
 		}
 	}
 
@@ -62,7 +123,7 @@ class Cutter
 		return null;
 	}
 
-	public function dataByReference(&$data)
+	public function dataByRef(&$data)
 	{
 		foreach ($data as $k => &$v) {
 			$this->data[$k] = &$v;
@@ -79,7 +140,7 @@ class Cutter
 		if (count($args) === 0) {
 			return $this->data;
 		} elseif (is_array($any)) {
-			$this->dataByReference($any);
+			$this->dataByRef($any);
 		} elseif (count($args) === 2 && isset($any)) {
 			$this->data[$any] = $val;
 		} elseif (count($args) === 1 && isset($any) && isset($this->data[$any])) {
@@ -89,25 +150,37 @@ class Cutter
 
 	public function path($names)
 	{
-		$paths = (array) $this->config['path'];
+		$paths = $this->config['path'];
 		$names = (array) $names;
-		$suffixs = (array) $this->config['suffix'];
+		$suffixs = $this->config['suffix'];
 
-		foreach ($paths as $path) {
-			foreach ($suffixs as $suffix) {
-				foreach ($names as $name) {
-					$file = "$path$name$suffix";
+		// Build cache key
+		$cacheKey = md5(serialize([$paths, $suffixs, $names]));
+
+		if (isset($this->pathCache[$cacheKey])) {
+			return $this->pathCache[$cacheKey];
+		}
+
+		// Optimized loop order: names × paths × suffixes (names usually smallest)
+		foreach ($names as $name) {
+			foreach ($paths as $path) {
+				foreach ($suffixs as $suffix) {
+					$file = $path . $name . $suffix;
 					if (file_exists($file) && is_file($file)) {
+						$this->pathCache[$cacheKey] = $file;
 						return $file;
 					}
 				}
 			}
 		}
+
+		$this->pathCache[$cacheKey] = false;
+		return false;
 	}
 
 	public function view($name, $data = [], $render = true)
 	{
-		$this->dataByReference($data);
+		$this->dataByRef($data);
 
 		$result = $this->load($this->path($name), true);
 
@@ -118,9 +191,13 @@ class Cutter
 
 	public function render($data = [])
 	{
-		$this->dataByReference($data);
+		$this->dataByRef($data);
 
-		$result = $this->load($this->path($this->config['layout']), false);
+		if ($this->resolvedLayout === null) {
+			$this->resolvedLayout = $this->path($this->config['layout']);
+		}
+
+		$result = $this->load($this->resolvedLayout, false);
 
 		return $result;
 	}
@@ -149,6 +226,8 @@ class Cutter
 
 		$this->sections[] = $section;
 		$this->positions[] = $position;
+		$this->currentSection = $section;
+		$this->currentPosition = $position;
 		ob_start();
 	}
 
@@ -179,6 +258,10 @@ class Cutter
 		} else {
 			throw new \Exception(sprintf('[Cutter]: unknown "%s" position for section "%s"', $position, $section), 1);
 		}
+
+		// Clear current section tracking
+		$this->currentSection = null;
+		$this->currentPosition = null;
 	}
 
 	public function stop()

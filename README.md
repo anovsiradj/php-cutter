@@ -2,7 +2,7 @@
 
 Flexible Template Library. Inspired by Blade (Laravel) and Twig (Symfony).
 
-Tested on PHP `5.6`, `~7` and `~8`.
+Tested on PHP `7.4`, `8.0`, `8.1`, `8.2`, `8.3`, `8.4`.
 
 ## Installation
 
@@ -20,7 +20,7 @@ composer require anovsiradj/cutter
 require 'Cutter.php'; // directly or composer
 
 $cutter = new anovsiradj\Cutter;
-$cutter->set('layout','/layouts/main');
+$cutter->set('layout', '/layouts/main');
 
 $cutter->data('page_title', 'My Posts'); // set variable
 
@@ -32,7 +32,7 @@ $cutter->view(
 
 `/layouts/main.php`
 
-use `section()` to define section
+use `section()` / `field()` to output sections
 
 ```php
 <!DOCTYPE html>
@@ -43,10 +43,10 @@ use `section()` to define section
 
 	<body>
 		<div>
-			<?php $cutter->section('content') ?>
-		<div>
+			<?php $cutter->field('content') ?>
+		</div>
 
-		<?php $cutter->section('script') ?>
+		<?php $cutter->field('script') ?>
 	</body>
 </html>
 ```
@@ -76,30 +76,59 @@ for more, see `/example/`.
 **Class Methods**
 
 ```php
-get( $key ) : void;
+// Config
+get( $key ) : mixed;
 set( $key, mixed $val ) : void;
 
-data( mixed $any [, mixed $val] ): mixed;
+// Data
+data( mixed $any [, mixed $val] ): mixed;        // get/set/array
+dataByRef( array &$data ) : void;                // bind by reference
 
-load( $file [, bool $isob = false] ): void;
+// View resolution
+path( mixed $names ) : string|false;             // find view file (cached)
+view( mixed $name [, array $data = [] [, bool $render = true ] ] ) : mixed;
+render( [array $data = [] ] ) : mixed;           // render layout (cached)
 
-view( mixed $name [, array $data = [] [, bool $render = true ] ] ) : void;
+// Sections
+section( $name ) : bool;                         // echo section content
+field( $name ) : bool;                           // alias for section()
+begin( $name [, $position = 'after'] ) : void;   // start capture
+end() : void;                                    // end capture
+start( $name [, $position] ) : void;             // alias for begin()
+open( $name [, $position] ) : void;              // alias for begin()
+stop() : void;                                   // alias for end()
+close() : void;                                  // alias for end()
 
-render( [array $data = [] ] ) : void;
+// Introspection (v2026)
+getCurrentSection() : ?string;                   // current capturing section
+getCurrentPosition() : ?string;                  // current position
 
-section( $name ) : bool;
+// Static factory
+static init() : static;                          // singleton instance
 
-begin( $name ) : void;
-end(): void
+// Callable helper
+__invoke( $section, $callback, $position = null ) : void;
+
+// Internal
+load( $file [, bool $isob = false ] ) : mixed;
 ```
+
+**Position Values**
+- `after` / `next` / `1` / `n` / `a` — append (default)
+- `before` / `prev` / `previous` / `0` / `p` / `b` — prepend
+
+## Performance (v2026)
+
+- **Path resolution cached** — repeated `path()` calls use in-memory cache
+- **Layout path cached** — `render()` resolves layout once
+- **Auto-invalidation** — cache cleared on relevant config changes
+- **Optimized loop order** — `names × paths × suffixes`
 
 ## Development
 
 TODO:
 - single file library / phar?
 - inheritance
-- ~~dynamic path~~
-- ~~dynamic view~~
 
 All suggestions are welcome. Thanks.
 
