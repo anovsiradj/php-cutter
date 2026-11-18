@@ -1,8 +1,8 @@
 # Cutter
 
-Flexible Template Library. Inspired by Blade (Laravel) and Twig (Symfony).
+KISS PHP Template Library.
 
-Tested on PHP `7.4`, `8.0`, `8.1`, `8.2`, `8.3`, `8.4`.
+Tested on PHP `7.4`, `8.0`, `8.1`, `8.2`, `8.3`, `8.4`, `8.5`.
 
 ## Installation
 
